@@ -64,7 +64,8 @@ CONCURRENT_REQUESTS = 256
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    'LianjiaSpider.pipelines.MysqlPipeline': 300,
+    # 'LianjiaSpider.pipelines.MysqlPipeline': 300,
+    'LianjiaSpider.pipelines.MysqlTwistedPipeline': 300,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
