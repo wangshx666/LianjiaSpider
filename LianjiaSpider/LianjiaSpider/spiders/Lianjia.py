@@ -24,15 +24,38 @@ class LianjiaSpider(scrapy.Spider):
 
     def parseHouse(self, response):
         SZHouse = SZHouseItem()
-        url = 'https://sz.lianjia.com/ershoufang/'
-        SZHouse['href'] = url + response.css('.aroundInfo .houseRecord span.info::text').get() + ".html"
-        SZHouse['name'] = response.css('.aroundInfo .communityName a.info::text').get()
-        SZHouse['unit_price'] = response.css('.price .total::text').get()
-        SZHouse['total_price'] = response.css('.price .unitPriceValue::text').get()
+        # 房子的链接
+        code = response.css('.aroundInfo .houseRecord span.info::text').get()
+        if code:
+            url = 'https://sz.lianjia.com/ershoufang/'
+            SZHouse['href'] = url + code + ".html"
+
+        # 小区名字
+        name = response.css('.aroundInfo .communityName a.info::text').get()
+        if name:
+            SZHouse['name'] = name
+
+        # 单价
+        unit_price = response.css('.price .unitPriceValue::text').get()
+        if unit_price:
+            SZHouse['unit_price'] = int(unit_price)
+
+        # 总价
+        total_price = response.css('.price .total::text').get()
+        if total_price:
+            SZHouse['total_price'] = int(total_price)
+
+        # 户型、面积、房子在几层
         res = response.css('.base .content li::text').getall()
-        SZHouse['room'] = res[0]
-        SZHouse['area'] = res[2]
-        SZHouse['floor'] = res[1]
-        SZHouse['time'] = response.css('.transaction .content li span::text').getall()[1]
+        if res:
+            SZHouse['room'] = res[0]
+            SZHouse['area'] = res[2]
+            SZHouse['floor'] = res[1]
+
+        # 房子信息发布时间
+        time = response.css('.transaction .content li span::text').getall()
+        if time:
+            SZHouse['time'] = time[1]
+
         print(SZHouse)
         yield SZHouse
