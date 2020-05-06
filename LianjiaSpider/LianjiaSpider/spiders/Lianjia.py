@@ -8,12 +8,21 @@ class LianjiaSpider(scrapy.Spider):
     name = 'Lianjia'
     # allowed_domains = ['https://sz.lianjia.com/ershoufang/']
     start_urls = ['https://sz.lianjia.com/ershoufang/']
+    source_url = 'https://sz.lianjia.com/'
 
     def parse(self, response):
+        # 获取深圳的所有区域，按区域拆分深圳的二手房
+        position = response.css('div.position div[data-role="ershoufang"] div>a::attr(href)').getall()
+        for p in position:
+            url = self.source_url + str(p)
+            yield scrapy.Request(url=url, callback=self.parseMax)
+
+    def parseMax(self, response):
         # 获取二手房页面的最大页数，构造翻页
+        page_url = response.css('div.page-box.house-lst-page-box::attr(page-url)').get()
         total_page = eval(response.css('div.page-box.house-lst-page-box::attr(page-data)').get())['totalPage']
         for page in range(1, total_page + 1):
-            url = 'https://sz.lianjia.com/ershoufang/pg{num}'.format(num=str(page))
+            url = self.source_url + page_url.format(page=str(page))
             yield scrapy.Request(url=url, callback=self.parsePage)
 
     def parsePage(self, response):
