@@ -4,7 +4,8 @@
 #
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
-
+import logging
+import requests
 from scrapy import signals
 
 
@@ -101,3 +102,24 @@ class LianjiaspiderDownloaderMiddleware(object):
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
+
+
+class ProxyMiddleware(object):
+
+    # def __init__(self):
+    #     self.logger = logging.getLogger(__name__)
+
+    def get_random_proxy(self):
+        # 自己维护在本地的IP代理池
+        try:
+            proxy = requests.get('http://127.0.0.1:5555/random')
+            if proxy.status_code == 200:
+                return proxy.text
+        except:
+            return None
+
+    def process_request(self, request, spider):
+        proxy = self.get_random_proxy()
+        if proxy:
+            request.meta['proxy'] = proxy
+            # self.logger.error("我就是想看一下代理有没有设置成功。", proxy)

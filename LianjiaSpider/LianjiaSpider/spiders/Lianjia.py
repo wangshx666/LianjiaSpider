@@ -11,10 +11,17 @@ class LianjiaSpider(scrapy.Spider):
     source_url = 'https://sz.lianjia.com/'
 
     def parse(self, response):
-        # 获取深圳的所有区域，按区域拆分深圳的二手房
+        # 获取深圳的所有区域(10个大区)，按区域拆分深圳的二手房
         position = response.css('div.position div[data-role="ershoufang"] div>a::attr(href)').getall()
         for p in position:
             url = self.source_url + str(p)
+            yield scrapy.Request(url=url, callback=self.parseDistrict)
+
+    def parseDistrict(self, response):
+        # 把深圳的10个大区划分为更多的小区域
+        district = response.css('div.position div[data-role="ershoufang"] div:nth-child(2) a::attr(href)').getall()
+        for d in district:
+            url = self.source_url + str(d)
             yield scrapy.Request(url=url, callback=self.parseMax)
 
     def parseMax(self, response):
